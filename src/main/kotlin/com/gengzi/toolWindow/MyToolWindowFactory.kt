@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.template.toolWindow
+package com.gengzi.toolWindow
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.thisLogger
@@ -8,11 +8,14 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
-import org.jetbrains.plugins.template.MyBundle
-import org.jetbrains.plugins.template.services.MyProjectService
+import com.gengzi.AiTools
+import com.gengzi.services.MyProjectService
 import javax.swing.JButton
 
 
+/**
+ * 定义了一个 ToolWindow
+ */
 class MyToolWindowFactory : ToolWindowFactory {
 
     init {
@@ -32,12 +35,12 @@ class MyToolWindowFactory : ToolWindowFactory {
         private val service = toolWindow.project.service<MyProjectService>()
 
         fun getContent() = JBPanel<JBPanel<*>>().apply {
-            val label = JBLabel(MyBundle.message("randomLabel", "?"))
+            val label = JBLabel(AiTools.message("randomLabel", "?"))
 
             add(label)
-            add(JButton(MyBundle.message("shuffle")).apply {
+            add(JButton(AiTools.message("shuffle")).apply {
                 addActionListener {
-                    label.text = MyBundle.message("randomLabel", service.getRandomNumber())
+                    label.text = AiTools.message("randomLabel", service.getRandomNumber())
                 }
             })
         }

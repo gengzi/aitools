@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.kover) // Gradle Kover Plugin
 }
 
+
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
 
@@ -32,6 +33,16 @@ repositories {
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
     testImplementation(libs.junit)
+    // https://mvnrepository.com/artifact/org.jetbrains/markdown
+//    runtimeOnly("org.jetbrains:markdown:0.7.3")
+//// https://mvnrepository.com/artifact/com.jetbrains.intellij.markdown/markdown
+    compileOnly("com.jetbrains.intellij.markdown:markdown:233.15619.7")
+//    compileOnly("com.jetbrains.java:java:233.15619.7")
+    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
+
+//// https://mvnrepository.com/artifact/org.commonmark/commonmark
+//    implementation("org.commonmark:commonmark:0.24.0")
+
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
@@ -43,6 +54,8 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
 
+        plugin("org.intellij.plugins.markdown","241.19072.24")
+//        plugin("com.intellij.java", "241.19072.24")
         instrumentationTools()
         pluginVerifier()
         zipSigner()
@@ -98,7 +111,8 @@ intellijPlatform {
         // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = providers.gradleProperty("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+        channels = providers.gradleProperty("pluginVersion")
+            .map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
     pluginVerification {

@@ -1,18 +1,71 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<!-- 插件的配置文件 -->
+
 <idea-plugin>
-    <id>org.jetbrains.plugins.template</id>
-    <name>IntelliJ Platform Plugin Template</name>
-    <vendor>JetBrains</vendor>
+    <id>com.gengzi.AiTools</id>
+    <name>aiTools</name>
+    <vendor>gengzi</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.intellij.plugins.markdown</depends>
+    <depends>com.intellij.modules.java</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="org.jetbrains.plugins.template.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <!--        &lt;!&ndash; 顶一个toolwindow &ndash;&gt;-->
+        <!--        <toolWindow factoryClass="com.gengzi.toolWindow.MyToolWindowFactory" id="MyToolWindow"-->
+        <!--                    anchor = 'right' />-->
+        <toolWindow factoryClass="com.gengzi.ui.toolWindow.AiToolWindowFactory" id="AiTools"
+                    anchor='right'/>
+        <applicationConfigurable instance="com.gengzi.ui.config.ConfigFrom" displayName="aiTools配置"/>
+        <applicationService serviceImplementation="com.gengzi.ui.save.MySettings"/>
+
+
+
+
     </extensions>
 
-    <applicationListeners>
-        <listener class="org.jetbrains.plugins.template.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
+
+    <actions>
+
+        <group
+                id="org.intellij.sdk.action.GroupedActions"
+                text="卡皮巴拉"
+                popup="true">
+            <add-to-group
+                    group-id="EditorPopupMenu"
+                    anchor="first"/>
+            <action
+                    class="com.gengzi.ui.action.MethodDescAction"
+                    id="MethodDescAction"
+                    text="解释方法">
+            </action>
+        </group>
+<!--        <action id="aitoolsEdit" class="com.gengzi.ui.action.AitoolsEditAction" text="卡皮巴拉"-->
+<!--                description="AitoolsEditAction">-->
+<!--            <add-to-group group-id="EditorPopupMenu" anchor="first"/>-->
+<!--        </action>-->
+
+
+<!--        <action id="MethodDescAction" class="com.gengzi.ui.action.MethodDescAction" text="方法解释"-->
+<!--                description="方法解释">-->
+<!--            <add-to-group group-id="EditorPopupMenu" anchor="first"/>-->
+<!--        </action>-->
+    </actions>
+
+
+
+
+
+
+
+
+
+
+
+    <!--    <applicationListeners>-->
+    <!--        <listener class="com.gengzi.listeners.MyApplicationActivationListener"-->
+    <!--                  topic="com.intellij.openapi.application.ApplicationActivationListener"/>-->
+    <!--    </applicationListeners>-->
 </idea-plugin>
