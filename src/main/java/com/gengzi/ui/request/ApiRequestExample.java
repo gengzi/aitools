@@ -18,7 +18,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,9 +27,11 @@ import com.google.protobuf.Message;
 import com.intellij.markdown.utils.MarkdownToHtmlConverter;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vcs.ui.CommitMessage;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.jcef.JBCefBrowser;
+import org.apache.commons.lang3.ThreadUtils;
 import org.apache.groovy.util.concurrent.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor;
 import org.intellij.plugins.markdown.ui.preview.html.MarkdownUtil;
@@ -44,6 +46,7 @@ public class ApiRequestExample {
     private static final ConcurrentHashMap<String, String> hashMap = new ConcurrentHashMap<String, String>();
     static MarkdownJCEFHtmlPanel markdownJCEFHtmlPanel = new MarkdownJCEFHtmlPanel();
     static StringBuffer sb = new StringBuffer();
+    private static final ScheduledExecutorService SCHEDULED_EXECUTOR = Executors.newSingleThreadScheduledExecutor();
 
     static ArrayList<Messages> messageList = new ArrayList<Messages>();
 
@@ -88,7 +91,7 @@ public class ApiRequestExample {
             openAiChatReq.setStream(true);
             Messages userMessages = new Messages();
             userMessages.setRole("user");
-            userMessages.setContent(message +  otherMsg);
+            userMessages.setContent(message + otherMsg);
             messageList.add(userMessages);
             if (messageList.stream().filter(v -> v.getRole().equals("system")).count() < 1) {
                 Messages sysMessages = new Messages();
@@ -249,6 +252,86 @@ public class ApiRequestExample {
             return jsonData;
         } else {
             return "";
+        }
+    }
+
+
+    public static void commitMsg(String apiKey, String message, Project project, CommitMessage commitMessage) {
+
+        try {
+            URL url = new URL(API_URL);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Authorization", "Bearer " + apiKey);
+            connection.setDoOutput(true);
+            message = message.replace("\n", "");
+
+            OpenAiChatReq openAiChatReq = new OpenAiChatReq();
+            openAiChatReq.setModel("deepseek-chat");
+            openAiChatReq.setStream(true);
+            Messages userMessages = new Messages();
+            userMessages.setRole("user");
+            userMessages.setContent(message);
+            messageList.add(userMessages);
+            if (messageList.stream().filter(v -> v.getRole().equals("system")).count() < 1) {
+                Messages sysMessages = new Messages();
+                sysMessages.setRole("system");
+                String prompt = "你是一个智能编码助手，提供行级/函数级实时续写、自然语言生成代码、单元测试生成、代码注释生成、代码解释、研发智能问答、异常报错排查等能力。" +
+                        "用户会提供一个 git 提交文件的差异上下文，比如 #diff标签，代表git diff 相关信息。" +
+                        "根据 'git diff --staged' 的输出以 `[文件类型](文件名): 改动描述。'\n'换行输出 ` 的格式编写一个简洁的提交消息" +
+                        "使用现在时和主动语态，每行最多 120 个字符，不使用代码块。\n";
+                sysMessages.setContent(prompt);
+                messageList.add(sysMessages);
+            }
+            openAiChatReq.setMessage(messageList);
+            Gson gson = new Gson();
+            String json = gson.toJson(openAiChatReq);
+            // 添加上下文关联
+            System.out.println(json);
+            try (DataOutputStream wr = new DataOutputStream(connection.getOutputStream())) {
+                wr.write(json.getBytes(StandardCharsets.UTF_8));
+            }
+
+            int responseCode = connection.getResponseCode();
+            String responseMessage = connection.getResponseMessage();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                    String inputLine;
+                    while ((inputLine = in.readLine()) != null) {
+                        // 这里可以对每一行流式数据进行处理，比如直接打印或者进一步解析等
+                        System.out.println("流式输出数据: " + inputLine);
+                        if ("".equalsIgnoreCase(inputLine)) {
+                            continue;
+                        }
+                        if ("data: [DONE]".equalsIgnoreCase(inputLine)) {
+//                            document.insertString(document.getLength(), " \n -------------------------------- \n", null);
+                            break;
+                        }
+                        // 如果有更复杂的业务逻辑，可以在这里添加相应代码来处理每一行数据
+                        String parseInputLine = JsonContentExtractor.parse(formatResponse(inputLine));
+
+                        SCHEDULED_EXECUTOR.schedule(new Runnable() {
+                            @Override
+                            public void run() {
+                                SwingUtilities.invokeLater(() -> {
+                                    String text = commitMessage.getText();
+                                    commitMessage.setText(text + parseInputLine);
+                                    commitMessage.updateUI();
+                                });
+                            }
+                        }, 10, TimeUnit.MILLISECONDS);
+
+
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                System.out.println("请求失败，响应码: " + responseCode + responseMessage);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

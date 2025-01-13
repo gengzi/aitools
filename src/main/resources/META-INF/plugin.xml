@@ -56,6 +56,10 @@
 <!--                description="方法解释">-->
 <!--            <add-to-group group-id="EditorPopupMenu" anchor="first"/>-->
 <!--        </action>-->
+        <action id="AiToolsCommitMessageGenAction" class="com.gengzi.ui.action.AiToolsCommitMessageGenAction"
+                text="生成提交信息" description="生成提交信息">
+            <add-to-group group-id="Vcs.MessageActionGroup" anchor="first"/>
+        </action>
     </actions>
 
 
