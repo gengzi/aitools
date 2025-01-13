@@ -1,23 +1,10 @@
-package com.gengzi.ui.toolWindow;
-
 import com.gengzi.ui.local.Constant;
 import com.gengzi.ui.markdown.HtmlContentReader;
 import com.gengzi.ui.markdown.MarkdownEntity;
 import com.gengzi.ui.request.ApiRequestExample;
 import com.gengzi.ui.save.MySettings;
-import com.gengzi.ui.swing.JBListByPsiFile;
-import com.intellij.ide.util.TreeFileChooser;
-import com.intellij.ide.util.TreeFileChooserFactory;
-import com.intellij.ide.util.gotoByName.*;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileUtil;
-import com.intellij.psi.PsiFile;
-import com.intellij.ui.components.JBList;
-import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
@@ -30,13 +17,9 @@ import org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel;
 import javax.swing.*;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ToolFrom {
     private static final Logger log = Logger.getInstance(ToolFrom.class);
@@ -47,11 +30,7 @@ public class ToolFrom {
     //    private JBCefOsrComponent JBCefOsrComponent1;
     private JEditorPane editorPane1;
     private JPanel jpanel3;
-    private JPanel file;
-    private JButton addFileBtn;
-    private JPanel filePanel;
-    private JBList fileList;
-    private JBScrollPane fileScrollPane;
+    private JComboBox comboBox1;
     private JButton button;
     private Project project;
     // private JTextField textField1;
@@ -59,17 +38,14 @@ public class ToolFrom {
 
     private static String MD_CSS = null;
 
-//    ConcurrentHashMap<String, PsiFile> fileConcurrentHashMap = new ConcurrentHashMap<String, PsiFile>();
-    DefaultListModel<Object> objectDefaultListModel = new DefaultListModel<>();
-
-//    static {
-//        try {
-//            MD_CSS = HtmlContentReader.getHtmlContentFromResources("github-markdown.css");
-//            MD_CSS = "<style type=\"text/css\">\n" + MD_CSS + "\n</style>\n";
-//        } catch (Exception e) {
-//            MD_CSS = "";
-//        }
-//    }
+    static {
+        try {
+            MD_CSS = HtmlContentReader.getHtmlContentFromResources("github-markdown.css");
+            MD_CSS = "<style type=\"text/css\">\n" + MD_CSS + "\n</style>\n";
+        } catch (Exception e) {
+            MD_CSS = "";
+        }
+    }
 
 
     public JPanel getPanel2() {
@@ -77,65 +53,8 @@ public class ToolFrom {
         return panel2;
     }
 
-
-    private JPopupMenu createPopupMenu() {
-        JPopupMenu popupMenu = new JPopupMenu();
-        JMenuItem deleteItem = new JMenuItem("删除");
-        deleteItem.addActionListener(e -> {
-            Object selectedItem = fileList.getSelectedValue();
-            if (selectedItem != null) {
-                objectDefaultListModel.removeElement(selectedItem);
-            }
-        });
-        popupMenu.add(deleteItem);
-        return popupMenu;
-    }
-
     public ToolFrom(Project project) {
         this.project = project;
-        fileList.setModel(objectDefaultListModel);
-        JBListByPsiFile.cellRendererToPsiFile(fileList);
-        // 添加右键菜单
-        fileList.setComponentPopupMenu(createPopupMenu());
-        fileList.setEmptyText("无文件，文件将在此展示");
-        // 获取当前project 文件信息
-
-        // 初始化选项栏
-//        DefaultComboBoxModel defaultComboBoxModel = new DefaultComboBoxModel();
-//        for (VirtualFile projectAllFile : ProjectUtils.getProjectAllFiles(project)) {
-//            defaultComboBoxModel.addElement(projectAllFile.getName());
-//        }
-//        comboBox1.setModel(defaultComboBoxModel);
-
-
-        ChooseByNamePanel chooseByNamePanel = new ChooseByNamePanel(project, new GotoFileModel(project), "选择", true, null) {
-
-            @Override
-            protected void initUI(final ChooseByNamePopupComponent.Callback callback,
-                                  final ModalityState modalityState,
-                                  boolean allowMultipleSelection) {
-                super.initUI(callback, modalityState, allowMultipleSelection);
-                file.add(this.getPanel(), BorderLayout.CENTER);
-            }
-        };
-
-
-        //ChooseByNamePanel chooseByNamePanel = new ChooseByNamePanel(project, new GotoFileModel(project), "选择一个文件", true, null);
-//        panel2.setVisible(true);
-//        ApplicationManager.getApplication().invokeLater(() -> {
-//            file.add(chooseByNamePanel.getPanel());
-//        });
-//        file.add(chooseByNamePanel.getPanel(), BorderLayout.CENTER);
-//
-//        file.updateUI();
-
-//        ChooseByNamePopupComponent chooseByNamePopupComponent = ChooseByNameFactory.getInstance(project).createChooseByNamePopupComponent(new GotoFileModel(project));
-//        file.add(chooseByNamePopupComponent);
-
-
-        //  comboBox1.add(chooseByNamePanel.getPanel());
-
-
         textArea1.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -231,32 +150,6 @@ public class ToolFrom {
 ////                scrollPane1.setViewportView(component);
 //            }
 //        });
-        addFileBtn.addActionListener(new ActionListener() {
-            /**
-             * Invoked when an action occurs.
-             *
-             * @param e the event to be processed
-             */
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                TreeFileChooserFactory treeFileChooserFactory = TreeFileChooserFactory.getInstance(project);
-                TreeFileChooser fileChooser = treeFileChooserFactory.createFileChooser("选择文件", null, null, null);
-                fileChooser.showDialog();
-                PsiFile selectedFile = fileChooser.getSelectedFile();
-                System.out.println(selectedFile);
-                // 添加到后面
-                if (selectedFile != null) {
-                    FileType fileType = selectedFile.getFileType();
-                    VirtualFile virtualFile = selectedFile.getVirtualFile();
-//                    String s = VirtualFileUtil.readText(virtualFile);
-//                    fileConcurrentHashMap.put(virtualFile.getPath(), selectedFile);
-
-                    objectDefaultListModel.addElement(selectedFile);
-
-//                    filePanel.add(new JButton(selectedFile.toString()));
-                }
-            }
-        });
     }
 
     public static String convertMarkdownToHtml(String markdown) {
@@ -297,29 +190,7 @@ public class ToolFrom {
 //        editorPane1.setContentType("text/plain");
         Document document = editorPane1.getDocument();
 
-        // 添加文件相关内容
-        String fileStr = "\n#file\n" +
-                "文件名称:%s\n" +
-                "文件类型:%s\n" +
-                "文件内容:%s\n";
-        StringBuilder sb = new StringBuilder();
-        ListModel model = fileList.getModel();
-        Arrays.stream(objectDefaultListModel.toArray()).forEach(
-                v->{
-                    PsiFile psiFile = (PsiFile) v;
-                    String format = String.format(fileStr, psiFile.getName(), psiFile.getFileType().getName(), psiFile.getText());
-                    sb.append(format);
-                }
-        );
-        sb.append(msg);
-//        for (PsiFile value : fileConcurrentHashMap.values()) {
-//            String format = String.format(fileStr, value.getName(), value.getFileType().getName(), value.getText());
-//            sb.append(format);
-//        }
-        String otherMsg = sb.toString();
-        System.out.println(msg);
-
-        ApiRequestExample.req(state.componentStates.get(Constant.API_KEY), msg, scrollPane1, project, otherMsg);
+        ApiRequestExample.req(state.componentStates.get(Constant.API_KEY), msg, scrollPane1, project);
 //        scrollPane1.updateUI();
 //        scrollPane1.setViewportView(editorPane1);
     }
@@ -369,5 +240,4 @@ public class ToolFrom {
 //        JComponent component = editor.getComponent();
 
     }
-
 }

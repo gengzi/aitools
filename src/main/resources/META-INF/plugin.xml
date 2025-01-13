@@ -8,7 +8,8 @@
 
     <depends>com.intellij.modules.platform</depends>
     <depends>org.intellij.plugins.markdown</depends>
-    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.java</depends>
+
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
@@ -18,7 +19,10 @@
         <!--                    anchor = 'right' />-->
         <toolWindow factoryClass="com.gengzi.ui.toolWindow.AiToolWindowFactory" id="AiTools"
                     anchor='right'/>
+<!--        <toolWindow factoryClass="com.gengzi.ui.toolWindow.PanelTest" id="测试"-->
+<!--                    anchor='right'/>-->
         <applicationConfigurable instance="com.gengzi.ui.config.ConfigFrom" displayName="aiTools配置"/>
+
         <applicationService serviceImplementation="com.gengzi.ui.save.MySettings"/>
 
 
