@@ -9,6 +9,8 @@ import com.gengzi.ui.swing.JBListByPsiFile;
 import com.intellij.ide.util.TreeFileChooser;
 import com.intellij.ide.util.TreeFileChooserFactory;
 import com.intellij.ide.util.gotoByName.*;
+import com.intellij.openapi.application.Application;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
@@ -41,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ToolFrom {
     private static final Logger log = Logger.getInstance(ToolFrom.class);
     private JTextArea textArea1;
-    private JScrollPane scrollPane1;
+    //    private JScrollPane scrollPane1;
     private JPanel panel1;
     private JPanel panel2;
     //    private JBCefOsrComponent JBCefOsrComponent1;
@@ -52,6 +54,7 @@ public class ToolFrom {
     private JPanel filePanel;
     private JBList fileList;
     private JBScrollPane fileScrollPane;
+    private JBScrollPane scrollPane1;
     private JButton button;
     private Project project;
     // private JTextField textField1;
@@ -59,7 +62,7 @@ public class ToolFrom {
 
     private static String MD_CSS = null;
 
-//    ConcurrentHashMap<String, PsiFile> fileConcurrentHashMap = new ConcurrentHashMap<String, PsiFile>();
+    //    ConcurrentHashMap<String, PsiFile> fileConcurrentHashMap = new ConcurrentHashMap<String, PsiFile>();
     DefaultListModel<Object> objectDefaultListModel = new DefaultListModel<>();
 
 //    static {
@@ -304,13 +307,18 @@ public class ToolFrom {
                 "文件内容:%s\n";
         StringBuilder sb = new StringBuilder();
         ListModel model = fileList.getModel();
-        Arrays.stream(objectDefaultListModel.toArray()).forEach(
-                v->{
-                    PsiFile psiFile = (PsiFile) v;
-                    String format = String.format(fileStr, psiFile.getName(), psiFile.getFileType().getName(), psiFile.getText());
-                    sb.append(format);
-                }
-        );
+
+        Application application = ApplicationManager.getApplication();
+        application.runReadAction(() -> {
+            Arrays.stream(objectDefaultListModel.toArray()).forEach(
+                    v -> {
+                        PsiFile psiFile = (PsiFile) v;
+                        String format = String.format(fileStr, psiFile.getName(), psiFile.getFileType().getName(), psiFile.getText());
+                        sb.append(format);
+                    }
+            );
+        });
+
         sb.append(msg);
 //        for (PsiFile value : fileConcurrentHashMap.values()) {
 //            String format = String.format(fileStr, value.getName(), value.getFileType().getName(), value.getText());

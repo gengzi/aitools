@@ -6,6 +6,7 @@ import com.gengzi.ui.save.JsonContentExtractor;
 
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -30,6 +31,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vcs.ui.CommitMessage;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
+import com.intellij.ui.components.JBScrollPane;
 import org.intellij.plugins.markdown.ui.preview.html.MarkdownUtil;
 import org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel;
 //import org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel;
@@ -46,7 +48,7 @@ public class ApiRequestExample {
     static ArrayList<Messages> messageList = new ArrayList<Messages>();
 
 
-    public static void req(String apiKey, String message, JScrollPane jEditorPane, Project project, String otherMsg) {
+    public static void req(String apiKey, String message, JBScrollPane jEditorPane, Project project, String otherMsg) {
         hashMap.put("thread-1", sb.toString());
         try {
             JComponent component1 = markdownJCEFHtmlPanel.getComponent();
@@ -160,7 +162,7 @@ public class ApiRequestExample {
         }
     }
 
-    private static void showHtml(JScrollPane jEditorPane, Project project) throws BadLocationException, IOException {
+    private static void showHtml(JBScrollPane jEditorPane, Project project) throws BadLocationException, IOException {
         String text = hashMap.get("thread-1");
         VirtualFile lightVirtualFile = new LightVirtualFile("temp.md", text);
         String html = ReadAction.nonBlocking(() -> {
@@ -174,12 +176,16 @@ public class ApiRequestExample {
 
         markdownJCEFHtmlPanel.getJBCefClient().getCefClient().removeRequestHandler();
         markdownJCEFHtmlPanel.setHtml(html, html.length());
-        jEditorPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-        JScrollBar verticalScrollBar = jEditorPane.getVerticalScrollBar();
-        if (verticalScrollBar != null) {
-            verticalScrollBar.setValue((verticalScrollBar.getValue() + 2));
-        }
-        jEditorPane.repaint();
+
+//        Dimension preferredSize = markdownJCEFHtmlPanel.getComponent().getPreferredSize();
+//        JViewport viewport = jEditorPane.getViewport();
+//        viewport.setViewPosition(new Point(0,preferredSize.height + html.length()));
+//        jEditorPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+//        JScrollBar verticalScrollBar = jEditorPane.getVerticalScrollBar();
+//        if (verticalScrollBar != null) {
+//            verticalScrollBar.setValue((verticalScrollBar.getValue() + 2));
+//        }
+//        jEditorPane.repaint();
     }
 
 //
