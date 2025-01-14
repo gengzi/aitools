@@ -7,11 +7,31 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="ad9f7" class="javax.swing.JLabel">
-        <constraints border-constraint="North"/>
-        <properties>
-          <text value="Label"/>
-        </properties>
+      <scrollpane id="ef661" class="com.intellij.ui.components.JBScrollPane" binding="sc">
+        <constraints border-constraint="Center"/>
+        <properties/>
+        <border type="none"/>
+        <children>
+          <grid id="5dbe5" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="f7e2" class="javax.swing.JTextPane" binding="textPane1" default-binding="true">
+                <constraints border-constraint="First"/>
+                <properties/>
+              </component>
+              <component id="162b2" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
+                <constraints border-constraint="Center"/>
+                <properties/>
+              </component>
+            </children>
+          </grid>
+        </children>
+      </scrollpane>
+      <component id="bfa5f" class="javax.swing.JTextPane" binding="textPane2" default-binding="true">
+        <constraints border-constraint="South"/>
+        <properties/>
       </component>
     </children>
   </grid>

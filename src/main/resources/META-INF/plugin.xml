@@ -18,9 +18,9 @@
         <!--        <toolWindow factoryClass="com.gengzi.toolWindow.MyToolWindowFactory" id="MyToolWindow"-->
         <!--                    anchor = 'right' />-->
         <toolWindow factoryClass="com.gengzi.ui.toolWindow.AiToolWindowFactory" id="AiTools"
+                    anchor='right'   icon="com.gengzi.ui.icon.MyIcons.GenCommitMsg"/>
+        <toolWindow factoryClass="com.gengzi.ui.toolWindow.PanelTest" id="测试"
                     anchor='right'/>
-<!--        <toolWindow factoryClass="com.gengzi.ui.toolWindow.PanelTest" id="测试"-->
-<!--                    anchor='right'/>-->
         <applicationConfigurable instance="com.gengzi.ui.config.ConfigFrom" displayName="aiTools配置"/>
 
         <applicationService serviceImplementation="com.gengzi.ui.save.MySettings"/>
@@ -35,7 +35,8 @@
 
         <group
                 id="org.intellij.sdk.action.GroupedActions"
-                text="卡皮巴拉"
+                text="Ai工具"
+                icon="com.gengzi.ui.icon.MyIcons.GenCommitMsg"
                 popup="true">
             <add-to-group
                     group-id="EditorPopupMenu"
@@ -44,6 +45,17 @@
                     class="com.gengzi.ui.action.MethodDescAction"
                     id="MethodDescAction"
                     text="解释方法">
+            </action>
+            <action
+                    class="com.gengzi.ui.action.FileDocAction"
+                    id="FileDocAction"
+                    text="生成文档描述">
+            </action>
+            <action id="NameAiTranAction"
+                    class="com.gengzi.ui.action.NameAiTranAction"
+                    text="AI取名"
+                    description="AI取名">
+                <keyboard-shortcut keymap="$default" first-keystroke="shift Q"/>
             </action>
         </group>
 <!--        <action id="aitoolsEdit" class="com.gengzi.ui.action.AitoolsEditAction" text="卡皮巴拉"-->
@@ -57,9 +69,10 @@
 <!--            <add-to-group group-id="EditorPopupMenu" anchor="first"/>-->
 <!--        </action>-->
         <action id="AiToolsCommitMessageGenAction" class="com.gengzi.ui.action.AiToolsCommitMessageGenAction"
-                text="生成提交信息" description="生成提交信息">
+                text="生成提交信息" description="生成提交信息"  icon="com.gengzi.ui.icon.MyIcons.GenCommitMsg">
             <add-to-group group-id="Vcs.MessageActionGroup" anchor="first"/>
         </action>
+
     </actions>
 
 

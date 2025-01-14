@@ -78,7 +78,7 @@ public class AiToolsCommitMessageGenAction extends AnAction {
         List<String> diff = getDiff(e);
         MySettings state = MySettings.getInstance().getState();
         String apikey = state.componentStates.get(Constant.API_KEY);
-        String message = "如下是本次所有提交的不同代码文件差异,请提供git commit信息:\n";
+        String message = "如下是本次所有提交的不同代码文件差异,换行输出git commit信息 :\n";
         StringBuilder sb = new StringBuilder();
         sb.append(message);
         for (String s : diff) {
