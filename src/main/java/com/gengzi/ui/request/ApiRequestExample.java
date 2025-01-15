@@ -2,6 +2,7 @@ package com.gengzi.ui.request;
 
 import com.gengzi.ui.entity.Messages;
 import com.gengzi.ui.entity.OpenAiChatReq;
+import com.gengzi.ui.local.Constant;
 import com.gengzi.ui.save.JsonContentExtractor;
 
 import javax.swing.*;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.gengzi.ui.save.MySettings;
 import com.google.gson.Gson;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -28,6 +30,7 @@ import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vcs.ui.CommitMessage;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
@@ -51,14 +54,16 @@ public class ApiRequestExample {
     public static void req(String apiKey, String message, JBScrollPane jEditorPane, Project project, String otherMsg) {
         hashMap.put("thread-1", sb.toString());
         try {
+            MySettings settings = MySettings.getInstance();
             JComponent component1 = markdownJCEFHtmlPanel.getComponent();
 //            JPanel panel = new JPanel();
 //            panel.setLayout(new BorderLayout());
 //            panel.add(component1, BorderLayout.CENTER);
             jEditorPane.setViewportView(component1);
 //            Document document = jEditorPane.getDocument();
-
-            sb.append("##  \uD83D\uDC38 ` 我：" + message + " ` \n");
+            String mePicture = settings.componentStates.get(Constant.ME_PICTURE);
+            mePicture = StringUtil.isEmpty(mePicture) ? "\uD83D\uDC40" : mePicture;
+            sb.append("##  " + mePicture + "  ` 我：" + message + " ` \n");
 
             // 添加用户的消息
 //            document.insertString(document.getLength(), "## 我：" + message + "\n", null);
@@ -114,7 +119,9 @@ public class ApiRequestExample {
                 try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                     String inputLine;
 //                    document.insertString(document.getLength(), "## AI程序员：", null);
-                    sb.append("## 卡皮巴拉：\n");
+                    String aiPicture = settings.componentStates.get(Constant.AI_PICTURE);
+                    aiPicture = StringUtil.isEmpty(aiPicture) ? "\uD83E\uDDE0" : aiPicture;
+                    sb.append("## " + aiPicture + " AI程序员：\n");
                     hashMap.put("thread-1", sb.toString());
                     StringBuffer assistantsb = new StringBuffer();
                     while ((inputLine = in.readLine()) != null) {
@@ -283,9 +290,9 @@ public class ApiRequestExample {
                         "根据 'git diff --staged' 的输出以 `- [新增/修改/删除](类名/文件名): 改动描述。` 的格式编写一个简洁的提交消息。" +
                         "使用现在时和主动语态，分点换行输出,每行最多 120 个字符，不使用代码块。\n" +
                         "例如：两个git diff --staged输出 \n" +
-                        "- 描述：修改了xx功能，存在两个文件修改,如下:\n"+
+                        "- 描述：修改了xx功能，存在两个文件修改,如下:\n" +
                         "- [新增](Test.java): 修改了xx内容。\n" +
-                        "- [删除](test.xml): 完善了xx内容。\n " ;
+                        "- [删除](test.xml): 完善了xx内容。\n ";
                 sysMessages.setContent(prompt);
                 messageList.add(sysMessages);
             }
@@ -342,7 +349,6 @@ public class ApiRequestExample {
     }
 
 
-
     public static void fileDoc(String apiKey, String message, Project project, Editor editor) {
         try {
             URL url = new URL(API_URL);
@@ -374,8 +380,7 @@ public class ApiRequestExample {
                         "     * \n 此类描述了xxx的内容，重要的方法有xx()" +
                         "     * 方法示例：\n" +
                         "     * \n" +
-                        "     */"
-                        ;
+                        "     */";
                 sysMessages.setContent(prompt);
                 messageList.add(sysMessages);
             }
@@ -415,7 +420,7 @@ public class ApiRequestExample {
                         // 如果有更复杂的业务逻辑，可以在这里添加相应代码来处理每一行数据
                         String parseInputLine = JsonContentExtractor.parse(formatResponse(inputLine));
 
-                        if(parseInputLine.startsWith("```")){
+                        if (parseInputLine.startsWith("```")) {
                             continue;
                         }
 

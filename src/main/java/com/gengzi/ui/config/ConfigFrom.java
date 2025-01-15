@@ -31,6 +31,9 @@ public class ConfigFrom implements SearchableConfigurable {
     private JBPasswordField apiKeyPassWrodField;
     private JButton commitButton;
     private JTextArea textArea1;
+    private JBTextField pictureTextField;
+    private JBTextField aiPictureTextField;
+    private JButton chatCommit;
 
     public ConfigFrom() {
         // 获取已保持的配置信息
@@ -62,6 +65,24 @@ public class ConfigFrom implements SearchableConfigurable {
                 settings.loadState(settings);
             }
         });
+
+
+        chatCommit.addActionListener(new ActionListener() {
+            /**
+             * Invoked when an action occurs.
+             *
+             * @param e the event to be processed
+             */
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String mePictureText = pictureTextField.getText();
+                String aiPictureText = aiPictureTextField.getText();
+                MySettings settings = MySettings.getInstance();
+                settings.componentStates.put(Constant.ME_PICTURE, mePictureText);
+                settings.componentStates.put(Constant.AI_PICTURE, aiPictureText);
+                settings.loadState(settings);
+            }
+        });
     }
 
     private void init() {
@@ -81,12 +102,21 @@ public class ConfigFrom implements SearchableConfigurable {
         }
         if (modelTypeText != null) {
             ModelTypeEnum modelTypeEnum = ModelTypeEnum.valueOf(modelTypeText);
-            if(ModelTypeEnum.LOCAL_MODEL.equals(modelTypeEnum)){
+            if (ModelTypeEnum.LOCAL_MODEL.equals(modelTypeEnum)) {
                 localModelRadio.setSelected(true);
             }
-            if(ModelTypeEnum.SERVER_MODEL.equals(modelTypeEnum)){
+            if (ModelTypeEnum.SERVER_MODEL.equals(modelTypeEnum)) {
                 severModelRadio.setSelected(true);
             }
+        }
+
+        final String mePicture = settings.componentStates.get(Constant.ME_PICTURE);
+        final String aiPicture = settings.componentStates.get(Constant.AI_PICTURE);
+        if (mePicture != null) {
+            pictureTextField.setText(mePicture);
+        }
+        if (aiPicture != null) {
+            aiPictureTextField.setText(aiPicture);
         }
     }
 
