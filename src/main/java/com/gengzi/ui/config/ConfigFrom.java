@@ -3,6 +3,7 @@ package com.gengzi.ui.config;
 import com.gengzi.ui.enums.ModelTypeEnum;
 import com.gengzi.ui.local.Constant;
 import com.gengzi.ui.save.MySettings;
+import com.gengzi.ui.util.EmojiToUnicode;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.util.NlsContexts;
@@ -78,8 +79,8 @@ public class ConfigFrom implements SearchableConfigurable {
                 String mePictureText = pictureTextField.getText();
                 String aiPictureText = aiPictureTextField.getText();
                 MySettings settings = MySettings.getInstance();
-                settings.componentStates.put(Constant.ME_PICTURE, mePictureText);
-                settings.componentStates.put(Constant.AI_PICTURE, aiPictureText);
+                settings.componentStates.put(Constant.ME_PICTURE, EmojiToUnicode.emojiToUnicode(mePictureText));
+                settings.componentStates.put(Constant.AI_PICTURE, EmojiToUnicode.emojiToUnicode(aiPictureText));
                 settings.loadState(settings);
             }
         });

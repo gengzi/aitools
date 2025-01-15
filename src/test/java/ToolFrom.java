@@ -5,6 +5,7 @@ import com.gengzi.ui.request.ApiRequestExample;
 import com.gengzi.ui.save.MySettings;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.jcef.JBCefBrowser;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
@@ -21,10 +22,26 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
 
+/**
+ * ToolFrom类用于处理Markdown文本的转换和显示。它提供了将Markdown文本转换为HTML格式的功能，并在UI组件中显示。
+ * 主要功能包括：
+ * - 将Markdown文本转换为HTML格式。
+ * - 在JEditorPane中显示HTML内容。
+ * - 通过JBCefBrowser加载和显示HTML内容。
+ * - 处理用户输入并触发相关操作。
+ *
+ * 重要方法：
+ * - convertMarkdownToHtml(String markdown): 将Markdown文本转换为HTML格式。
+ * - ofContent(String content): 将Markdown文本转换为MarkdownEntity对象，包含HTML和CSS样式。
+ * - parse(String content): 将Markdown文本解析为HTML内容。
+ * - editImpl(MySettings state, String msg, Project project): 处理编辑操作，调用API请求并更新UI。
+ * - markdownImpl(String htmlContent): 在UI中显示HTML内容。
+ */
+
 public class ToolFrom {
     private static final Logger log = Logger.getInstance(ToolFrom.class);
     private JTextArea textArea1;
-    private JScrollPane scrollPane1;
+    private JBScrollPane scrollPane1;
     private JPanel panel1;
     private JPanel panel2;
     //    private JBCefOsrComponent JBCefOsrComponent1;
@@ -190,7 +207,7 @@ public class ToolFrom {
 //        editorPane1.setContentType("text/plain");
         Document document = editorPane1.getDocument();
 
-        ApiRequestExample.req(state.componentStates.get(Constant.API_KEY), msg, scrollPane1, project);
+        ApiRequestExample.req(state.componentStates.get(Constant.API_KEY), msg, scrollPane1, project,"");
 //        scrollPane1.updateUI();
 //        scrollPane1.setViewportView(editorPane1);
     }

@@ -20,6 +20,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gengzi.ui.save.MySettings;
+import com.gengzi.ui.util.EmojiToUnicode;
 import com.google.gson.Gson;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
@@ -62,7 +63,7 @@ public class ApiRequestExample {
             jEditorPane.setViewportView(component1);
 //            Document document = jEditorPane.getDocument();
             String mePicture = settings.componentStates.get(Constant.ME_PICTURE);
-            mePicture = StringUtil.isEmpty(mePicture) ? "\uD83D\uDC40" : mePicture;
+            mePicture = StringUtil.isEmpty(mePicture) ? "\uD83D\uDC40" : EmojiToUnicode.unicodeToEmoji(mePicture);
             sb.append("##  " + mePicture + "  ` 我：" + message + " ` \n");
 
             // 添加用户的消息
@@ -120,7 +121,7 @@ public class ApiRequestExample {
                     String inputLine;
 //                    document.insertString(document.getLength(), "## AI程序员：", null);
                     String aiPicture = settings.componentStates.get(Constant.AI_PICTURE);
-                    aiPicture = StringUtil.isEmpty(aiPicture) ? "\uD83E\uDDE0" : aiPicture;
+                    aiPicture = StringUtil.isEmpty(aiPicture) ? "\uD83E\uDDE0" : EmojiToUnicode.unicodeToEmoji(aiPicture);
                     sb.append("## " + aiPicture + " AI程序员：\n");
                     hashMap.put("thread-1", sb.toString());
                     StringBuffer assistantsb = new StringBuffer();

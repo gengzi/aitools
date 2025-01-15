@@ -51,12 +51,6 @@
           <color color="-13463814"/>
         </border>
         <children>
-          <component id="1d84f" class="javax.swing.JLabel">
-            <constraints border-constraint="North"/>
-            <properties>
-              <text value="发起提问："/>
-            </properties>
-          </component>
           <grid id="22598" binding="filePanel" layout-manager="BorderLayout" hgap="0" vgap="0">
             <constraints border-constraint="Center"/>
             <properties>
@@ -106,6 +100,40 @@
               <wrapStyleWord value="false"/>
             </properties>
           </component>
+          <grid id="7d9f9" layout-manager="BorderLayout" hgap="0" vgap="0">
+            <constraints border-constraint="North"/>
+            <properties/>
+            <border type="none"/>
+            <children>
+              <component id="1d84f" class="javax.swing.JLabel">
+                <constraints border-constraint="North"/>
+                <properties>
+                  <text value="发起提问："/>
+                </properties>
+              </component>
+              <grid id="6eda" binding="reqPanel" layout-manager="BorderLayout" hgap="0" vgap="0">
+                <constraints border-constraint="Last"/>
+                <properties>
+                  <enabled value="true"/>
+                </properties>
+                <border type="none"/>
+                <children>
+                  <component id="7082d" class="com.intellij.ui.components.JBLabel">
+                    <constraints border-constraint="West"/>
+                    <properties>
+                      <text value="生成中..."/>
+                    </properties>
+                  </component>
+                  <component id="39530" class="javax.swing.JButton" binding="reqButton">
+                    <constraints border-constraint="East"/>
+                    <properties>
+                      <text value="中止"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+            </children>
+          </grid>
         </children>
       </grid>
     </children>

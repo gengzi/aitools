@@ -15,8 +15,8 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileUtil;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
@@ -27,6 +27,7 @@ import com.vladsch.flexmark.parser.Parser;
 import com.vladsch.flexmark.parser.ParserEmulationProfile;
 import com.vladsch.flexmark.util.ast.Node;
 import com.vladsch.flexmark.util.data.MutableDataSet;
+import org.apache.commons.lang3.StringUtils;
 import org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel;
 
 import javax.swing.*;
@@ -38,7 +39,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ToolFrom {
     private static final Logger log = Logger.getInstance(ToolFrom.class);
@@ -55,12 +55,15 @@ public class ToolFrom {
     private JBList fileList;
     private JBScrollPane fileScrollPane;
     private JBScrollPane scrollPane1;
+    private JButton reqButton;
+    private JPanel reqPanel;
     private JButton button;
     private Project project;
     // private JTextField textField1;
 //    private JList list1;
 
     private static String MD_CSS = null;
+    private Thread thread ;
 
     //    ConcurrentHashMap<String, PsiFile> fileConcurrentHashMap = new ConcurrentHashMap<String, PsiFile>();
     DefaultListModel<Object> objectDefaultListModel = new DefaultListModel<>();
@@ -102,6 +105,7 @@ public class ToolFrom {
         fileList.setComponentPopupMenu(createPopupMenu());
         fileList.setEmptyText("无文件，文件将在此展示");
         textArea1.setName("aiToolsInputArea");
+        reqPanel.setVisible(false);
 
 
 
@@ -149,6 +153,7 @@ public class ToolFrom {
                 super.keyPressed(e);
                 char keyChar = e.getKeyChar();
                 if (keyChar == '\n') {
+                    reqPanel.setVisible(true);
                     log.info("回车");
                     log.info(textArea1.getText());
                     // sk-f7af6993c62840b9a19b20d2e7063511
@@ -169,7 +174,7 @@ public class ToolFrom {
                     });
 
                     panel1.updateUI();
-                    new Thread(new Runnable() {
+                    thread = new Thread(new Runnable() {
                         @Override
                         public void run() {
                             JBCefBrowser browser = new JBCefBrowser();
@@ -180,6 +185,11 @@ public class ToolFrom {
                             browser.loadHTML(htmlContentFromResources);
                             // 请求
                             System.out.println("请求中..." + state.componentStates.get(Constant.API_KEY) + msg);
+                            if(StringUtils.isBlank(state.componentStates.get(Constant.API_KEY))){
+                                // 需要先配置秘钥
+                                JOptionPane.showMessageDialog(null, "请先配置秘钥", "提示", JOptionPane.INFORMATION_MESSAGE);
+                                return;
+                            }
 //                            editorPane1.setContentType("text/html");
 //                            Document document = editorPane1.getDocument();
 //                            MarkdownJCEFHtmlPanel markdownJCEFHtmlPanel = new MarkdownJCEFHtmlPanel();
@@ -202,8 +212,12 @@ public class ToolFrom {
 //                            scrollPane1.revalidate();
 //                            scrollPane1.repaint();
                             editImpl(state, msg, project);
+                            SwingUtilities.invokeLater(() -> {
+                                reqPanel.setVisible(false);
+                            });
                         }
-                    }).start();
+                    });
+                    thread.start();
                 }
             }
         });
@@ -261,6 +275,23 @@ public class ToolFrom {
                     objectDefaultListModel.addElement(selectedFile);
 
 //                    filePanel.add(new JButton(selectedFile.toString()));
+                }
+            }
+        });
+        reqButton.addActionListener(new ActionListener() {
+            /**
+             * Invoked when an action occurs.
+             *
+             * @param e the event to be processed
+             */
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                reqPanel.setVisible(false);
+                if(thread != null ){
+                    boolean alive = thread.isAlive();
+                    if(alive){
+                        thread.stop();
+                    }
                 }
             }
         });

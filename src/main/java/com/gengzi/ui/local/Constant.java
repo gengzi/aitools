@@ -11,6 +11,7 @@ public class Constant {
     public static final String MODEL_TYPE = "MODEL_TYPE";
 
     public static final String ME_PICTURE = "ME_PICTURE";
+
     public static final String AI_PICTURE = "AI_PICTURE";
 
 
