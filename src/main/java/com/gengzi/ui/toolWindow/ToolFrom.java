@@ -101,6 +101,10 @@ public class ToolFrom {
         // 添加右键菜单
         fileList.setComponentPopupMenu(createPopupMenu());
         fileList.setEmptyText("无文件，文件将在此展示");
+        textArea1.setName("aiToolsInputArea");
+
+
+
         // 获取当前project 文件信息
 
         // 初始化选项栏

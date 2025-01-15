@@ -1,5 +1,6 @@
 package com.gengzi.ui.action;
 
+import com.gengzi.ui.local.ComponentQueryByName;
 import com.gengzi.ui.local.Constant;
 import com.gengzi.ui.openai.Curl;
 import com.gengzi.ui.save.MySettings;
@@ -15,7 +16,15 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
@@ -75,9 +84,9 @@ public class MethodDescAction extends AnAction {
             return;
         }
 
+        StringBuilder codeSb = new StringBuilder();
         // 获取文档实例，文档包含了编辑器中的所有文本内容
         Document document = editor.getDocument();
-
         // 获取所有的光标位置（通常在有多个选中区域时会有多个光标）
         List<Caret> allCarets = editor.getCaretModel().getAllCarets();
         for (Caret caret : allCarets) {
@@ -87,30 +96,39 @@ public class MethodDescAction extends AnAction {
                 // 获取选中的原始文本
                 String selectedText = document.getText(selectedTextRange);
                 // 在这里对选中的文本进行修改，例如将其转换为大写
-//                String modifiedText = selectedText.toUpperCase();
-                // 将修改后的文本替换原来选中的文本
-                Application application = ApplicationManager.getApplication();
+                String modifiedText = selectedText.toUpperCase();
+                codeSb.append(modifiedText);
+            }
+        }
 
-                application.runWriteAction(() -> {
+        // 获取 ToolWindowManager
+        ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+        // 查找你想要的 ToolWindow，这里假设 ToolWindow 的 ID 是 "MyToolWindow"
+        ToolWindow toolWindow = toolWindowManager.getToolWindow("AiTools");
+        if (toolWindow == null) {
+            return;
+        }
 
-                    MySettings state = MySettings.getInstance().getState();
-                    String url = state.componentStates.get(Constant.URL_kEY);
-                    String apikey = state.componentStates.get(Constant.API_KEY);
-                    try {
-                        Stream<String> modelResponseTextStream = Curl.getModelResponseTextStream(url, apikey, selectedText);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                    CommandProcessor.getInstance().executeCommand(project, () -> {
-                        document.replaceString(selectedTextRange.getStartOffset(), selectedTextRange.getEndOffset(), "");
-                    }, "My Command", null);
-                });
+        // 显示 ToolWindow
+        toolWindow.show();
+        // 获取 ToolWindow 的内容管理器
+        ContentManager contentManager = toolWindow.getContentManager();
+        if (contentManager == null) {
+            return;
+        }
 
+        Component componentByName = ComponentQueryByName.findComponentByName(project, "AiTools", "aiToolsInputArea");
+        if(componentByName instanceof JTextArea){
+            JTextArea jTextArea = (JTextArea) componentByName;
+            StringBuilder sb = new StringBuilder();
+            sb.append("解释如下这段代码逻辑:\n");
+            sb.append(codeSb.toString());
+            jTextArea.setText(sb.toString());
 
-
-//                CommandProcessor.getInstance().executeCommand(project, () -> {
-//                    document.replaceString(selectedTextRange.getStartOffset(), selectedTextRange.getEndOffset(), modifiedText);
-//                }, "My Command", null);
+            // 手动触发 KeyListener
+            KeyEvent keyEvent = new KeyEvent(jTextArea, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ENTER, '\n');
+            for (KeyListener listener : jTextArea.getKeyListeners()) {
+                listener.keyPressed(keyEvent);
             }
         }
     }

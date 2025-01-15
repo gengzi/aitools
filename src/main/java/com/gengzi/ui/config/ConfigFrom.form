@@ -129,13 +129,37 @@
                   </component>
                 </children>
               </grid>
-              <grid id="2ba62" layout-manager="BorderLayout" hgap="0" vgap="0">
+              <grid id="2ba62" layout-manager="FormLayout">
+                <rowspec value="center:max(p;50px):noGrow"/>
+                <colspec value="fill:d:noGrow"/>
+                <colspec value="fill:d:grow"/>
                 <constraints>
                   <tabbedpane title="聊天窗口"/>
                 </constraints>
                 <properties/>
                 <border type="none"/>
-                <children/>
+                <children>
+                  <component id="2a923" class="com.intellij.ui.components.JBLabel">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+                      <forms/>
+                    </constraints>
+                    <properties>
+                      <text value="系统提示词："/>
+                    </properties>
+                  </component>
+                  <component id="9bd4f" class="javax.swing.JTextArea" binding="textArea1" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="8" fill="2" indent="0" use-parent-layout="false">
+                        <preferred-size width="150" height="50"/>
+                      </grid>
+                      <forms defaultalign-horz="false" defaultalign-vert="false"/>
+                    </constraints>
+                    <properties>
+                      <columns value="100"/>
+                    </properties>
+                  </component>
+                </children>
               </grid>
             </children>
           </tabbedpane>

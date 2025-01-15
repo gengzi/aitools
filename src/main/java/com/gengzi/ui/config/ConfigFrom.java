@@ -30,6 +30,7 @@ public class ConfigFrom implements SearchableConfigurable {
     private JBTextField qryUrlTextField;
     private JBPasswordField apiKeyPassWrodField;
     private JButton commitButton;
+    private JTextArea textArea1;
 
     public ConfigFrom() {
         // 获取已保持的配置信息
