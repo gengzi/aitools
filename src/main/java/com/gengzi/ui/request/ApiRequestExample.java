@@ -20,6 +20,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.gengzi.ui.save.MySettings;
+import com.gengzi.ui.util.BacktickCounterRegex;
 import com.gengzi.ui.util.EmojiToUnicode;
 import com.google.gson.Gson;
 import com.intellij.openapi.application.Application;
@@ -36,6 +37,7 @@ import com.intellij.openapi.vcs.ui.CommitMessage;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.ui.components.JBScrollPane;
+import org.apache.commons.lang3.StringUtils;
 import org.intellij.plugins.markdown.ui.preview.html.MarkdownUtil;
 import org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel;
 //import org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel;
@@ -61,6 +63,22 @@ public class ApiRequestExample {
 //            panel.setLayout(new BorderLayout());
 //            panel.add(component1, BorderLayout.CENTER);
             jEditorPane.setViewportView(component1);
+
+            // 判断下当前的markdownJCEFHtmlPanel 结尾是否有代码块，有的话，需要优化
+
+            String content = sb.toString();
+            if(StringUtils.isNotBlank(content)){
+                sb.append("\n");
+            }
+            if (content.contains("```")) {
+                int count = BacktickCounterRegex.countBackticksWithRegex(content);
+                if(count % 2 != 0){
+                    sb.append("\n```\n");
+                }
+            }
+
+
+
 //            Document document = jEditorPane.getDocument();
             String mePicture = settings.componentStates.get(Constant.ME_PICTURE);
             mePicture = StringUtil.isEmpty(mePicture) ? "\uD83D\uDC40" : EmojiToUnicode.unicodeToEmoji(mePicture);
