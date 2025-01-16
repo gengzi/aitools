@@ -5,7 +5,7 @@
     <id>com.gengzi.AiTools</id>
     <name>aiTools</name>
     <vendor>gengzi</vendor>
-
+    <!-- 所依赖的插件的id -->
     <depends>com.intellij.modules.platform</depends>
     <depends>org.intellij.plugins.markdown</depends>
     <depends>com.intellij.java</depends>

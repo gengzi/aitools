@@ -9,15 +9,21 @@ import com.gengzi.ui.swing.JBListByPsiFile;
 import com.intellij.ide.util.TreeFileChooser;
 import com.intellij.ide.util.TreeFileChooserFactory;
 import com.intellij.ide.util.gotoByName.*;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.ui.MessageType;
+import com.intellij.openapi.ui.popup.Balloon;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.ui.GotItTooltip;
+import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.jcef.JBCefBrowser;
@@ -31,6 +37,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
@@ -39,6 +47,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ToolFrom {
     private static final Logger log = Logger.getInstance(ToolFrom.class);
@@ -57,13 +67,16 @@ public class ToolFrom {
     private JBScrollPane scrollPane1;
     private JButton reqButton;
     private JPanel reqPanel;
+    private JButton newChatButton;
     private JButton button;
     private Project project;
     // private JTextField textField1;
 //    private JList list1;
 
     private static String MD_CSS = null;
-    private Thread thread ;
+    private Thread thread;
+
+    private final Lock lock = new ReentrantLock();
 
     //    ConcurrentHashMap<String, PsiFile> fileConcurrentHashMap = new ConcurrentHashMap<String, PsiFile>();
     DefaultListModel<Object> objectDefaultListModel = new DefaultListModel<>();
@@ -106,7 +119,6 @@ public class ToolFrom {
         fileList.setEmptyText("无文件，文件将在此展示");
         textArea1.setName("aiToolsInputArea");
         reqPanel.setVisible(false);
-
 
 
         // 获取当前project 文件信息
@@ -153,43 +165,48 @@ public class ToolFrom {
                 super.keyPressed(e);
                 char keyChar = e.getKeyChar();
                 if (keyChar == '\n') {
-                    reqPanel.setVisible(true);
-                    log.info("回车");
-                    log.info(textArea1.getText());
-                    // sk-f7af6993c62840b9a19b20d2e7063511
-                    MySettings state = MySettings.getInstance().getState();
-                    String msg = textArea1.getText().trim();
-//                    textArea1.setText("");
-
-                    int length = textArea1.getText().length();
-                    String content = textArea1.getText();
-                    content = content.replace("\n", "");
-                    content = content.replace("\r", "");
-                    // 使用replaceRange方法将整个文本范围替换为空字符串
-                    textArea1.setText(content);
-                    textArea1.replaceRange("", 0, content.length());
-                    // 将光标位置设置为0，使光标回到第一行开头
-                    SwingUtilities.invokeLater(() -> {
-                        textArea1.setCaretPosition(0);
-                    });
-
-                    panel1.updateUI();
                     thread = new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            JBCefBrowser browser = new JBCefBrowser();
-                            JComponent component = browser.getComponent();
-                            String htmlContentFromResources = HtmlContentReader.getHtmlContentFromResources("content.html");
-                            System.out.println(htmlContentFromResources);
-                            ;
-                            browser.loadHTML(htmlContentFromResources);
-                            // 请求
-                            System.out.println("请求中..." + state.componentStates.get(Constant.API_KEY) + msg);
-                            if(StringUtils.isBlank(state.componentStates.get(Constant.API_KEY))){
-                                // 需要先配置秘钥
-                                JOptionPane.showMessageDialog(null, "请先配置秘钥", "提示", JOptionPane.INFORMATION_MESSAGE);
-                                return;
-                            }
+                            // 判断是否正在输出内容
+                            if (lock.tryLock()) {
+//                                lock.lock();
+                                try {
+                                    reqPanel.setVisible(true);
+                                    log.info("回车");
+                                    log.info(textArea1.getText());
+                                    // sk-f7af6993c62840b9a19b20d2e7063511
+                                    MySettings state = MySettings.getInstance().getState();
+                                    String msg = textArea1.getText().trim();
+//                    textArea1.setText("");
+
+                                    int length = textArea1.getText().length();
+                                    String content = textArea1.getText();
+                                    content = content.replace("\n", "");
+                                    content = content.replace("\r", "");
+                                    // 使用replaceRange方法将整个文本范围替换为空字符串
+                                    textArea1.setText(content);
+                                    textArea1.replaceRange("", 0, content.length());
+                                    // 将光标位置设置为0，使光标回到第一行开头
+                                    SwingUtilities.invokeLater(() -> {
+                                        textArea1.setCaretPosition(0);
+                                    });
+
+                                    panel1.updateUI();
+
+                                    JBCefBrowser browser = new JBCefBrowser();
+                                    JComponent component = browser.getComponent();
+                                    String htmlContentFromResources = HtmlContentReader.getHtmlContentFromResources("content.html");
+                                    System.out.println(htmlContentFromResources);
+                                    ;
+                                    browser.loadHTML(htmlContentFromResources);
+                                    // 请求
+                                    System.out.println("请求中..." + state.componentStates.get(Constant.API_KEY) + msg);
+                                    if (StringUtils.isBlank(state.componentStates.get(Constant.API_KEY))) {
+                                        // 需要先配置秘钥
+                                        JOptionPane.showMessageDialog(null, "请先配置秘钥", "提示", JOptionPane.INFORMATION_MESSAGE);
+                                        return;
+                                    }
 //                            editorPane1.setContentType("text/html");
 //                            Document document = editorPane1.getDocument();
 //                            MarkdownJCEFHtmlPanel markdownJCEFHtmlPanel = new MarkdownJCEFHtmlPanel();
@@ -211,15 +228,32 @@ public class ToolFrom {
 //                            scrollPane1.updateUI();
 //                            scrollPane1.revalidate();
 //                            scrollPane1.repaint();
-                            editImpl(state, msg, project);
-                            SwingUtilities.invokeLater(() -> {
-                                reqPanel.setVisible(false);
-                            });
+                                    editImpl(state, msg, project);
+                                    SwingUtilities.invokeLater(() -> {
+                                        reqPanel.setVisible(false);
+                                    });
+                                } finally {
+                                    lock.unlock();
+                                }
+                            } else {
+                                new Thread(() -> {
+//                                    GotItTooltip tooltip = new GotItTooltip("提示", "回答中...", null).withTimeout(5000);
+//                                    tooltip.show(reqButton, GotItTooltip.BOTTOM_MIDDLE);
+
+                                    Balloon balloon = JBPopupFactory.getInstance().createHtmlTextBalloonBuilder("回答中",
+                                            MessageType.INFO, new DefaultHyperlinkListener(reqButton)).setFadeoutTime(7500L).createBalloon();
+                                    balloon.show(RelativePoint.getCenterOf(reqButton), Balloon.Position.below);
+                                }).start();
+
+//                        JOptionPane.showMessageDialog(null, "正在请求中，请勿重复点击", "提示", JOptionPane.INFORMATION_MESSAGE);
+                            }
                         }
                     });
                     thread.start();
                 }
+
             }
+
         });
 //
 //
@@ -287,14 +321,42 @@ public class ToolFrom {
             @Override
             public void actionPerformed(ActionEvent e) {
                 reqPanel.setVisible(false);
-                if(thread != null ){
+                if (thread != null) {
                     boolean alive = thread.isAlive();
-                    if(alive){
+                    if (alive) {
                         thread.stop();
                     }
                 }
             }
         });
+        // 新对话
+        newChatButton.addActionListener(new ActionListener() {
+            /**
+             * Invoked when an action occurs.
+             *
+             * @param e the event to be processed
+             */
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 新建一个对话，移出之前的内容
+                ApiRequestExample.clear();
+
+            }
+        });
+    }
+
+    private static class DefaultHyperlinkListener implements HyperlinkListener {
+        JComponent component;
+
+        private DefaultHyperlinkListener(JComponent component) {
+            this.component = component;
+        }
+
+        public void hyperlinkUpdate(HyperlinkEvent e) {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            }
+
+        }
     }
 
     public static String convertMarkdownToHtml(String markdown) {

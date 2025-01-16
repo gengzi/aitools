@@ -17,9 +17,15 @@
         </border>
         <children>
           <component id="40441" class="javax.swing.JLabel">
-            <constraints border-constraint="Center"/>
+            <constraints border-constraint="West"/>
             <properties>
               <text value="对话框"/>
+            </properties>
+          </component>
+          <component id="91406" class="javax.swing.JButton" binding="newChatButton">
+            <constraints border-constraint="East"/>
+            <properties>
+              <text value="新对话"/>
             </properties>
           </component>
         </children>
