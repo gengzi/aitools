@@ -53,7 +53,7 @@ dependencies {
 
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
-
+        // 安装插件
         plugin("org.intellij.plugins.markdown","241.19072.24")
 //        plugin("com.intellij.java", "241.19072.24")
         instrumentationTools()
@@ -115,11 +115,11 @@ intellijPlatform {
             .map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
-    pluginVerification {
-        ides {
-            recommended()
-        }
-    }
+//    pluginVerification {
+//        ides {
+//            recommended()
+//        }
+//    }
 }
 
 // Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin

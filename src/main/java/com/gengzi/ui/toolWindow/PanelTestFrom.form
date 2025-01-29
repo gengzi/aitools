@@ -25,6 +25,12 @@
                 <constraints border-constraint="Center"/>
                 <properties/>
               </component>
+              <component id="499d5" class="javax.swing.JButton" binding="diffbtn">
+                <constraints border-constraint="West"/>
+                <properties>
+                  <text value="代码对比测试"/>
+                </properties>
+              </component>
             </children>
           </grid>
         </children>

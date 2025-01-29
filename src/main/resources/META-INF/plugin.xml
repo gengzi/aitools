@@ -30,6 +30,10 @@
 
     </extensions>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <diff.DiffTool implementation="com.gengzi.ui.extensions.CustomFrameDiffTool"  />
+    </extensions>
+
 
     <actions>
 
