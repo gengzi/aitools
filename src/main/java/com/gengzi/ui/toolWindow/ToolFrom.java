@@ -1,28 +1,34 @@
 package com.gengzi.ui.toolWindow;
 
+import com.gengzi.ui.entity.RequestEntityBase;
 import com.gengzi.ui.local.Constant;
 import com.gengzi.ui.markdown.HtmlContentReader;
 import com.gengzi.ui.markdown.MarkdownEntity;
 import com.gengzi.ui.request.ApiRequestExample;
+import com.gengzi.ui.request.ModelRequestFactory;
+import com.gengzi.ui.request.RequestLLMInterface;
+import com.gengzi.ui.save.JsonContentExtractor;
 import com.gengzi.ui.save.MySettings;
 import com.gengzi.ui.swing.JBListByPsiFile;
+import com.intellij.diff.DiffContentFactory;
+import com.intellij.diff.DiffManager;
+import com.intellij.diff.contents.DiffContent;
+import com.intellij.diff.requests.DiffRequest;
+import com.intellij.diff.requests.SimpleDiffRequest;
 import com.intellij.ide.util.TreeFileChooser;
 import com.intellij.ide.util.TreeFileChooserFactory;
 import com.intellij.ide.util.gotoByName.*;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.ui.MessageType;
 import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.ui.GotItTooltip;
 import com.intellij.ui.awt.RelativePoint;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
@@ -49,6 +55,8 @@ import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ToolFrom {
     private static final Logger log = Logger.getInstance(ToolFrom.class);
@@ -68,6 +76,7 @@ public class ToolFrom {
     private JButton reqButton;
     private JPanel reqPanel;
     private JButton newChatButton;
+    private JCheckBox changeFileCheckBox;
     private JButton button;
     private Project project;
     // private JTextField textField1;
@@ -228,7 +237,44 @@ public class ToolFrom {
 //                            scrollPane1.updateUI();
 //                            scrollPane1.revalidate();
 //                            scrollPane1.repaint();
-                                    editImpl(state, msg, project);
+
+
+
+                                    if(changeFileCheckBox.isSelected()){
+                                        RequestLLMInterface deepseek = ModelRequestFactory.createRequestLLMInterface("deepseek");
+                                        RequestEntityBase requestEntityBase = new RequestEntityBase();
+                                        Stream<String> stringStream = deepseek.requestLlm(requestEntityBase);
+
+                                        StringBuilder sb = new StringBuilder();
+                                        stringStream.forEach(v -> {
+                                            if ("data: [DONE]".equalsIgnoreCase(v)) {
+                                                return;
+                                            }
+                                            if (!"".equals(v)) {
+                                                String parseInputLine = JsonContentExtractor.parse(formatResponse(v));
+                                                sb.append(parseInputLine);
+                                            }
+                                        });
+                                        // 创建 Diff 内容
+                                        DiffContentFactory contentFactory = DiffContentFactory.getInstance();
+                                        DiffContent content1 = contentFactory.create("Public class xx{}");
+                                        DiffContent content2 = contentFactory.create(sb.toString());
+                                        // 创建 Diff 请求
+                                        DiffRequest request = new SimpleDiffRequest("xx.java对比", content1, content2, "Left", "Right");
+                                        SwingUtilities.invokeLater(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                DiffManager.getInstance().showDiff(project, request);
+                                            }
+                                        });
+
+
+                                    }else{
+                                        editImpl(state, msg, project);
+                                    }
+
+
+
                                     SwingUtilities.invokeLater(() -> {
                                         reqPanel.setVisible(false);
                                     });
@@ -473,6 +519,16 @@ public class ToolFrom {
 //                MarkdownPreviewFileEditor editor = new MarkdownPreviewFileEditor();
 //        JComponent component = editor.getComponent();
 
+    }
+
+    private static String formatResponse(String response) {
+        // 这里可以对响应数据进行格式化处理，比如去掉多余的空格
+        if (response.startsWith("data: ")) {
+            String jsonData = response.substring(6);
+            return jsonData;
+        } else {
+            return "";
+        }
     }
 
 }

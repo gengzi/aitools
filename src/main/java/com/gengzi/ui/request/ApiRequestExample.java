@@ -18,11 +18,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import com.gengzi.ui.save.MySettings;
 import com.gengzi.ui.util.BacktickCounterRegex;
 import com.gengzi.ui.util.EmojiToUnicode;
 import com.google.gson.Gson;
+import com.intellij.json.JsonParser;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -172,6 +174,9 @@ public class ApiRequestExample {
                         }
                         // 如果有更复杂的业务逻辑，可以在这里添加相应代码来处理每一行数据
 
+//                        if(!isJSONValid(inputLine)){
+//                            continue;
+//                        }
                         String parseInputLine = JsonContentExtractor.parse(formatResponse(inputLine));
 //                        MarkdownToHtmlConverter markdownToHtmlConverter = new MarkdownToHtmlConverter(new CommonMarkFlavourDescriptor());
 //                        String markdown = markdownToHtmlConverter.convertMarkdownToHtml(parseInputLine,null);
@@ -196,6 +201,11 @@ public class ApiRequestExample {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean isJSONValid(String json) {
+        String regex = "^(\\{.*\\}|\\[.*\\])$";
+        return Pattern.matches(regex, json);
     }
 
     private static void showHtml(JBScrollPane jEditorPane, Project project) throws BadLocationException, IOException {

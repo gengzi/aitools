@@ -26,26 +26,6 @@ public class CustomFrameDiffTool implements FrameDiffTool, SuppressiveDiffTool {
     @Override
     public @NotNull DiffViewer createComponent(@NotNull DiffContext context, com.intellij.diff.requests.@NotNull DiffRequest request) {
         DiffViewer viewer = new UnifiedDiffViewerWithButtons(context,request);
-//        if (viewer instanceof DiffViewerBase) {
-//            DiffViewerBase baseViewer = (DiffViewerBase) viewer;
-//            JComponent component = baseViewer.getComponent();
-//
-//            // 创建按钮
-//            JButton customButton = new JButton("自定义按钮");
-//            customButton.addActionListener(e -> {
-//                System.out.println("自定义按钮被点击");
-//            });
-//
-//            // 创建面板放置按钮
-//            JPanel buttonPanel = new JPanel();
-//            buttonPanel.setLayout(new FlowLayout());
-//            buttonPanel.add(customButton);
-//
-//            // 将按钮面板添加到 Diff 组件底部
-//            component.add(buttonPanel, BorderLayout.SOUTH);
-//            component.revalidate();
-//            component.repaint();
-//        }
         return viewer;
     }
 
@@ -56,7 +36,6 @@ public class CustomFrameDiffTool implements FrameDiffTool, SuppressiveDiffTool {
 
     @Override
     public boolean canShow(@NotNull DiffContext context, com.intellij.diff.requests.@NotNull DiffRequest request) {
-
         return true;
     }
 

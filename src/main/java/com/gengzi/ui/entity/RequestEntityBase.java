@@ -1,29 +1,30 @@
 package com.gengzi.ui.entity;
 
-import com.google.gson.Gson;
 
-import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 构造请求参数
- */
-public class OpenAiChatReq {
+public class RequestEntityBase {
 
+    /**
+     * model
+     */
     private String model;
 
+    /**
+     * 请求消息
+     */
     private List<Messages> messages;
 
+    /**
+     * 是否流示返回
+     */
     private boolean stream;
 
-
-    public String getJsonReq(List<Messages> messages) {
-        ArrayList list = (ArrayList) this.messages;
-        list.addAll(messages);
-        Gson gson = new Gson();
-        return gson.toJson(this);
+    public RequestEntityBase() {
+        this.model = model;
+        this.messages = messages;
+        this.stream = stream;
     }
-
 
     public String getModel() {
         return model;
@@ -33,12 +34,12 @@ public class OpenAiChatReq {
         this.model = model;
     }
 
-    public List<Messages> getMessage() {
+    public List<Messages> getMessages() {
         return messages;
     }
 
-    public void setMessage(List<Messages> message) {
-        this.messages = message;
+    public void setMessages(List<Messages> messages) {
+        this.messages = messages;
     }
 
     public boolean isStream() {

@@ -131,6 +131,8 @@ public class ToolFrom {
 //                            scrollPane1.revalidate();
 //                            scrollPane1.repaint();
                             editImpl(state, msg, project);
+
+
                         }
                     }).start();
                 }
