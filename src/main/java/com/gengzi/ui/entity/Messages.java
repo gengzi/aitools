@@ -11,6 +11,14 @@ public class Messages {
 
     private String content;
 
+    public Messages() {
+    }
+
+    public Messages(String role, String content) {
+        this.role = role;
+        this.content = content;
+    }
+
     public String getRole() {
         return role;
     }

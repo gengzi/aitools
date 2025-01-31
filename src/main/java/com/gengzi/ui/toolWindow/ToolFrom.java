@@ -1,6 +1,8 @@
 package com.gengzi.ui.toolWindow;
 
+import com.gengzi.ui.entity.Messages;
 import com.gengzi.ui.entity.RequestEntityBase;
+import com.gengzi.ui.filecode.CodeExtractor;
 import com.gengzi.ui.local.Constant;
 import com.gengzi.ui.markdown.HtmlContentReader;
 import com.gengzi.ui.markdown.MarkdownEntity;
@@ -22,6 +24,8 @@ import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.MessageType;
@@ -45,14 +49,15 @@ import org.intellij.plugins.markdown.ui.preview.jcef.MarkdownJCEFHtmlPanel;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.Arrays;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -241,30 +246,90 @@ public class ToolFrom {
 
 
                                     if(changeFileCheckBox.isSelected()){
+                                        // 勾选了修改文件，在大模型内容都返回后，触发代码对比逻辑
                                         RequestLLMInterface deepseek = ModelRequestFactory.createRequestLLMInterface("deepseek");
+                                        String fileStr = "\n#file\n" +
+                                                "文件名称:%s\n" +
+                                                "文件类型:%s\n" +
+                                                "文件内容:%s\n";
+                                        StringBuilder sb = new StringBuilder();
+                                        ListModel model = fileList.getModel();
+
+                                        Application application = ApplicationManager.getApplication();
+                                        application.runReadAction(() -> {
+                                            Arrays.stream(objectDefaultListModel.toArray()).forEach(
+                                                    v -> {
+                                                        PsiFile psiFile = (PsiFile) v;
+                                                        String format = String.format(fileStr, psiFile.getName(), psiFile.getFileType().getName(), psiFile.getText());
+                                                        sb.append(format);
+                                                    }
+                                            );
+                                        });
+                                        sb.append(msg);
                                         RequestEntityBase requestEntityBase = new RequestEntityBase();
+                                        requestEntityBase.setMessages(Arrays.asList(new Messages("user", sb.toString())));
                                         Stream<String> stringStream = deepseek.requestLlm(requestEntityBase);
 
-                                        StringBuilder sb = new StringBuilder();
+                                        //TODO 先更新聊天框输出
+
+
+                                        // 再修改文件，提示diff窗口
+
+
+                                        StringBuilder sb1 = new StringBuilder();
                                         stringStream.forEach(v -> {
                                             if ("data: [DONE]".equalsIgnoreCase(v)) {
                                                 return;
                                             }
                                             if (!"".equals(v)) {
                                                 String parseInputLine = JsonContentExtractor.parse(formatResponse(v));
-                                                sb.append(parseInputLine);
+                                                sb1.append(parseInputLine);
                                             }
                                         });
+
+                                        // 从响应先获取文件名和代码内容
+                                        Map<String, String> fileCode = CodeExtractor.parseContent(sb1.toString());
+
+
+                                        List<Object> collect = Arrays.stream(objectDefaultListModel.toArray()).filter(
+                                                v -> {
+                                                    PsiFile psiFile = (PsiFile) v;
+                                                    String name = psiFile.getName();
+                                                    if (fileCode.containsKey(name)) {
+                                                        return true;
+                                                    }
+                                                    return false;
+                                                }
+                                        ).collect(Collectors.toList());
+                                        PsiFile psiFile1 = (PsiFile)collect.get(0);
+                                        Application application1 = ApplicationManager.getApplication();
+                                        VirtualFile virtualFile = psiFile1.getVirtualFile();
+                                        AtomicReference<String> originalContent = new AtomicReference<>("");
+                                        application1.runReadAction(
+                                                ()->{
+//                                                    VirtualFile virtualFile = psiFile1.getVirtualFile();
+                                                    Document document = FileDocumentManager.getInstance().getDocument(virtualFile);
+                                                    originalContent.set(document.getText());
+                                                }
+                                        );
+
+
+
+
+
                                         // 创建 Diff 内容
                                         DiffContentFactory contentFactory = DiffContentFactory.getInstance();
-                                        DiffContent content1 = contentFactory.create("Public class xx{}");
-                                        DiffContent content2 = contentFactory.create(sb.toString());
+                                        DiffContent content1 = contentFactory.create(project, virtualFile);
+                                        DiffContent content2 = contentFactory.create(project, fileCode.get(psiFile1.getName()));
                                         // 创建 Diff 请求
-                                        DiffRequest request = new SimpleDiffRequest("xx.java对比", content1, content2, "Left", "Right");
+                                        DiffRequest request = new SimpleDiffRequest(psiFile1.getName(), content1, content2, "Left", "Right");
+
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
                                             public void run() {
-                                                DiffManager.getInstance().showDiff(project, request);
+                                                ApplicationManager.getApplication().invokeLater(() -> {
+                                                    DiffManager.getInstance().showDiff(project, request);
+                                                }, ModalityState.defaultModalityState());
                                             }
                                         });
 
@@ -441,7 +506,8 @@ public class ToolFrom {
         editorPane1.setEditable(false);
         editorPane1.setEditorKit(new HTMLEditorKit());
 //        editorPane1.setContentType("text/plain");
-        Document document = editorPane1.getDocument();
+        javax.swing.text.Document document = editorPane1.getDocument();
+//        Document document = editorPane1.getDocument();
 
         // 添加文件相关内容
         String fileStr = "\n#file\n" +

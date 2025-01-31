@@ -18,6 +18,8 @@ import static com.intellij.openapi.ui.playback.PlaybackRunner.StatusCallback.Typ
 public class DeepSeekReqLLM extends RequestLLMAbs{
     @Override
     public Stream<String> req(RequestEntityBase requestEntity) {
+        List<Messages> userMessages = requestEntity.getMessages();
+
         try {
             ArrayList<Messages> messageList = new ArrayList<Messages>();
             URL url = new URL("https://api.deepseek.com/chat/completions");
@@ -32,15 +34,16 @@ public class DeepSeekReqLLM extends RequestLLMAbs{
             OpenAiChatReq openAiChatReq = new OpenAiChatReq();
             openAiChatReq.setModel("deepseek-chat");
             openAiChatReq.setStream(true);
-            Messages userMessages = new Messages();
-            userMessages.setRole("user");
-            userMessages.setContent("添加一个双层循环方法：#file 文件名:xx.java 内容： public class xx{}");
-            messageList.add(userMessages);
+            messageList.addAll(userMessages);
             if (messageList.stream().filter(v -> v.getRole().equals("system")).count() < 1) {
                 Messages sysMessages = new Messages();
                 sysMessages.setRole("system");
-                sysMessages.setContent("你是一个智能编码助手，提供行级/函数级实时续写、自然语言生成代码、单元测试生成、代码注释生成、代码解释、研发智能问答、异常报错排查等能力。#file代表文件内容，" +
-                        "你的回复代码文件需要固定格式 以&&&@开头，以&&&*结尾");
+                sysMessages.setContent("你是一个智能编码助手，提供行级/函数级实时续写、自然语言生成代码、单元测试生成、代码注释生成、代码解释、研发智能问答、异常报错排查等能力。#file代表用户添加文件内容，" +
+                        "回复要求：" +
+                        "返回的每个代码块前添加[文件名称]标记，后面紧跟修改后的代码内容" +
+                        "回复格式：" +
+                        "先回答所有修改的代码文件，文件名：[例如xx.java] [修改后的代码]" +
+                        "再回复代码修改的内容。");
                 messageList.add(sysMessages);
             }
             openAiChatReq.setMessage(messageList);
