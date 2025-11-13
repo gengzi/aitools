@@ -6,14 +6,16 @@ import com.intellij.diff.contents.DocumentContent;
 import com.intellij.diff.contents.FileContent;
 import com.intellij.diff.requests.DiffRequest;
 import com.intellij.diff.requests.SimpleDiffRequest;
-import com.intellij.diff.tools.fragmented.UnifiedDiffViewer;
+import com.intellij.diff.tools.simple.SimpleDiffViewer;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.popup.JBPopup;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,9 +23,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-public class UnifiedDiffViewerWithButtons extends UnifiedDiffViewer {
+/**
+ * UnifiedDiffViewerWithButtons
+ *
+ * @author gengzi
+ */
+public class UnifiedDiffViewerWithButtons extends SimpleDiffViewer implements Disposable {
 
     private JComponent component;
+    private UnifiedDiffViewerWithButtons unifiedDiffViewerWithButtons;
+    private JBPopup diffPopup;
 
     public UnifiedDiffViewerWithButtons(DiffContext context, DiffRequest request) {
         super(context, request);
@@ -33,6 +42,23 @@ public class UnifiedDiffViewerWithButtons extends UnifiedDiffViewer {
         JButton rejectButton = new JButton("拒绝");
 
 
+        unifiedDiffViewerWithButtons = this;
+
+        diffPopup = JBPopupFactory.getInstance()
+                .createComponentPopupBuilder(getComponent(), null)
+                .setNormalWindowLevel(true)
+                .setCancelOnClickOutside(false)
+                .setRequestFocus(false)
+                .setFocusable(true)
+                .setMovable(true)
+                .setResizable(true)
+                .setShowBorder(true)
+                .setCancelKeyEnabled(true)
+                .setCancelOnWindowDeactivation(false)
+                .setCancelOnOtherWindowOpen(false)
+                .createPopup();
+
+        diffPopup.showInScreenCoordinates(getComponent(), new Point(100, 100)); // 示例显示位置
         acceptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -62,10 +88,10 @@ public class UnifiedDiffViewerWithButtons extends UnifiedDiffViewer {
 
 
                     // 获取修改后的内容
-                        modifiedContent =  ((DocumentContent) modifiedDiffContent).getDocument().getText();
+                    modifiedContent = ((DocumentContent) modifiedDiffContent).getDocument().getText();
 
                 } else {
-                   throw new RuntimeException("目标文件不存在");
+                    throw new RuntimeException("目标文件不存在");
                 }
 
                 if (targetFile != null && modifiedContent != null) {
@@ -86,14 +112,8 @@ public class UnifiedDiffViewerWithButtons extends UnifiedDiffViewer {
                     });
                 }
 
-
-                Window window = SwingUtilities.getWindowAncestor(component);
-                if (window != null) {
-                    window.dispose();
-                }
-
-//                document.setText(modifiedContent);
-//                FileDocumentManager.getInstance().saveDocument(document);
+                diffPopup.dispose();
+                Disposer.dispose(unifiedDiffViewerWithButtons);
 
 
             }
@@ -104,14 +124,6 @@ public class UnifiedDiffViewerWithButtons extends UnifiedDiffViewer {
             public void actionPerformed(ActionEvent e) {
                 // 处理拒绝操作，例如忽略差异
                 System.out.println("点击了拒绝按钮");
-
-
-                Window window = SwingUtilities.getWindowAncestor(component);
-                if (window != null) {
-                    window.dispose();
-                }
-
-
 
 
 
@@ -131,5 +143,8 @@ public class UnifiedDiffViewerWithButtons extends UnifiedDiffViewer {
 //        Content content = contentFactory.createContent(buttonPanel, "", false);
 //        getContentManager().addContent(content);
     }
+
+
+
 
 }

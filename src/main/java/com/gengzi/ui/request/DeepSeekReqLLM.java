@@ -43,7 +43,7 @@ public class DeepSeekReqLLM extends RequestLLMAbs{
                         "返回的每个代码块前添加[文件名称]标记，后面紧跟修改后的代码内容" +
                         "回复格式：" +
                         "先回答所有修改的代码文件，文件名：[例如xx.java] [修改后的代码]" +
-                        "再回复代码修改的内容。");
+                        "再回复代码修改的内容，必须按照按回复格式返回内容");
                 messageList.add(sysMessages);
             }
             openAiChatReq.setMessage(messageList);
